@@ -1,0 +1,1 @@
+This is a project to explore the possibility of using Facebook graph API

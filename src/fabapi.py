@@ -38,7 +38,7 @@ api_endpoint='search?type=place&q='+str(place_name)+'&fields='+str(fields)+'&acc
 places_data_all={}
 places = graph.request(api_endpoint)
 print(places)
-print(places.keys())
+# print(places.keys())
 # print(places['paging'].keys())
 # print(places['data'][0]['category_list'][0]['name'])
 # places_data_all.update(places['data'])
@@ -56,11 +56,15 @@ category_groups={}
 page=1
 
 while (len(places['data']) > 0 and 'paging'in places.keys() ):
+
     if ('next' in places['paging'].keys()):
+        print('fetched page #'+str(page))
         page+=1
+
         after_str = str(places['paging']['cursors']['after'])
-        api_endpoint = 'search?type=place&q=' + str(place_name) + '&fields=' + str(fields) + '&access_token=' + str(
-            app_token) + '&after=' + str(after_str)
+        # api_endpoint = 'search?type=place&q=' + str(place_name) + '&fields=' + str(fields) + '&access_token=' + str(
+        #     app_token) + '&after=' + str(after_str)
+        api_endpoint=str(places['paging']['next']).replace('https://graph.facebook.com/v7.0/','')
         places = graph.request(api_endpoint)
         # print(places)
         for place in places['data']:
@@ -71,6 +75,10 @@ while (len(places['data']) > 0 and 'paging'in places.keys() ):
 
             else:
                 category_groups[str(place['category_list'][0]['name'])] = [place['id']]
+
+    else:
+        print('Kaam Hua Poora!!  Taking a Break!!')
+        break
 else:
     print('Total Pages searched: '+str(page))
     after_str = ''
@@ -88,11 +96,12 @@ else:
 
 
 
-
+totalresults=0
 for key in category_groups.keys():
+    totalresults+=len(category_groups[key])
     print(str(key)+' : '+str(len(category_groups[key])))
 
-
+print('TOTAL Number OF RESULTS FETCHED :'+str(totalresults))
 
 
 # print(category_groups)

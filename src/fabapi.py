@@ -1,12 +1,15 @@
 import facebook
 
-app_token='531028137803440|MTAZ6dDOtX4irhfEflpyVjnOuXM'
+# app_token='531028137803440|MTAZ6dDOtX4irhfEflpyVjnOuXM'
+app_token_1='716290055861545|QXtyO5mxb51n4C79LOeQMLsfVrE'
+app_token='284080672994426|lzRAr-vt3f9POl17RDL3SI_Nssc'
 # working in Facebook Graph API explorer
 
 place_name=input("Enter a Place to Search ?")
 graph = facebook.GraphAPI(access_token=app_token, version = 3.1)
 fields='name, ' \
-       'category_list'
+       'category_list,' \
+       'single_line_address'
        # 'checkins,' \
        # 'website,' \
        # 'link,' \
@@ -35,18 +38,68 @@ api_endpoint='search?type=place&q='+str(place_name)+'&fields='+str(fields)+'&acc
 places_data_all={}
 places = graph.request(api_endpoint)
 print(places)
+print(places.keys())
+# print(places['paging'].keys())
 # print(places['data'][0]['category_list'][0]['name'])
 # places_data_all.update(places['data'])
-try:
-    for place in places['data']:
-        print(place['category_list'][0]['name'])
+category_groups={}
+# try:
+# for place in places['data']:
+#     if (place['category_list'][0]['name'] in category_groups.keys()):
+#         # add id to the internal list
+#         category_groups[str(place['category_list'][0]['name'])].append(place['id'])
+#
+#     else:
+#         category_groups[str(place['category_list'][0]['name'])] = [place['id']]
+#     # print(place['category_list'][0]['name'])
+# print(category_groups)
+page=1
 
-    while(places['paging']['next']!=None):
-       after_str=str(places['paging']['cursors']['after'])
-       api_endpoint = 'search?type=place&q=' + str(place_name) + '&fields=' + str(fields) + '&access_token=' + str(app_token) + '&after=' + str(after_str)
-       places = graph.request(api_endpoint)
-       print(places)
-       for place in places['data']:
-           print(place['category_list'][0]['name'])
-except(KeyError):
-    print('Last Page reached!!')
+while (len(places['data']) > 0 and 'paging'in places.keys() ):
+    if ('next' in places['paging'].keys()):
+        page+=1
+        after_str = str(places['paging']['cursors']['after'])
+        api_endpoint = 'search?type=place&q=' + str(place_name) + '&fields=' + str(fields) + '&access_token=' + str(
+            app_token) + '&after=' + str(after_str)
+        places = graph.request(api_endpoint)
+        # print(places)
+        for place in places['data']:
+            # print(place['category_list'][0]['name'])
+            if (place['category_list'][0]['name'] in category_groups.keys()):
+                # add id to the internal list
+                category_groups[str(place['category_list'][0]['name'])].append(place['id'])
+
+            else:
+                category_groups[str(place['category_list'][0]['name'])] = [place['id']]
+else:
+    print('Total Pages searched: '+str(page))
+    after_str = ''
+    api_endpoint = 'search?type=place&q=' + str(place_name) + '&fields=' + str(fields) + '&access_token=' + str(app_token) + '&after=' + str(after_str)
+    places = graph.request(api_endpoint)
+   # print(places)
+    for place in places['data']:
+        #print(place['category_list'][0]['name'])
+        if(place['category_list'][0]['name'] in category_groups.keys()):
+            #add id to the internal list
+            category_groups[str(place['category_list'][0]['name'])].append(place['id'])
+
+        else:
+            category_groups[str(place['category_list'][0]['name'])]=[place['id']]
+
+
+
+
+for key in category_groups.keys():
+    print(str(key)+' : '+str(len(category_groups[key])))
+
+
+
+
+# print(category_groups)
+
+
+# except(KeyError):
+#     print('Last Page reached!!')
+#
+# except():
+#     print('Some Error Occurred!!')
